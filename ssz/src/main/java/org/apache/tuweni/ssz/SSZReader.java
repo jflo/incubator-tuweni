@@ -17,9 +17,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.units.bigints.UInt256;
 import org.apache.tuweni.units.bigints.UInt384;
+import org.apache.tuweni.units.bigints.UInt64;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -775,4 +777,5 @@ public interface SSZReader {
    * Reads a List of Variable size type from the SSZ source.
    */
   <T extends SSZReadable> List<T> readVariableSizeTypeList(Supplier<T> supplier);
+  Optional<UInt64> readUInt64Optional();
 }

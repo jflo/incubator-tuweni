@@ -18,11 +18,13 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.units.bigints.UInt256;
 import org.apache.tuweni.units.bigints.UInt384;
+import org.apache.tuweni.units.bigints.UInt64;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.LongFunction;
 import java.util.function.Supplier;
@@ -457,5 +459,17 @@ final class BytesSSZReader implements SSZReader {
     t.populateFromReader(this.slice(content.size() - index));
     elements.add(t);
     return Collections.unmodifiableList(elements);
+  }
+
+  @Override
+  public Optional<UInt64> readUInt64Optional() {
+    List<Long> l = readUInt64List();
+    if (l.isEmpty()) {
+      return Optional.empty();
+    } else if(l.size() == 1) {
+      return Optional.of(UInt64.valueOf(l.get(0)));
+    } else {
+      throw new InvalidSSZTypeException("Expected optional UInt64, but got list of size " + l.size());
+    }
   }
 }

@@ -25,10 +25,14 @@ import org.apache.tuweni.bytes.Bytes48;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
+import org.apache.tuweni.units.bigints.UInt256;
+import org.apache.tuweni.units.bigints.UInt64;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -85,6 +89,36 @@ class BytesSSZReaderTest {
 
     Bytes encoded = SSZ.encode(payload::writeTo);
     assertEquals(inputString, encoded.toString());
+  }
+
+  @Test
+  void shouldRoundTripOptionalUInt64() throws IOException {
+
+    UInt256 status = UInt256.ONE;
+    UInt256 cumulativeGasUsed = UInt256.valueOf(1000);
+    List<Bytes> logsBloom = new ArrayList<>();
+    for(int b = 0; b < 256; b++) {
+      logsBloom.add(Bytes.of((byte) b));
+    }
+    byte transactionType = 5;
+    Optional<UInt64> cumulativeDataGasUsed = Optional.of(UInt64.valueOf(1000));
+    Receipt receipt = new Receipt(status, cumulativeGasUsed, logsBloom, transactionType, cumulativeDataGasUsed);
+    Bytes encoded = SSZ.encode(receipt::writeTo);
+    Receipt decodedReceipt = SSZ.decode(encoded, sszReader -> {
+      var toDecode = new Receipt();
+      toDecode.populateFromReader(sszReader);
+      return toDecode;
+    });
+    //assertEquals(receipt, decodedReceipt);
+    assertTrue(receipt.equals(decodedReceipt));
+    receipt = new Receipt(status, cumulativeGasUsed, logsBloom, transactionType, Optional.empty());
+    encoded = SSZ.encode(receipt::writeTo);
+    decodedReceipt = SSZ.decode(encoded, sszReader -> {
+      var toDecode = new Receipt();
+      toDecode.populateFromReader(sszReader);
+      return toDecode;
+    });
+    assertTrue(receipt.equals(decodedReceipt));
   }
 
   @ParameterizedTest

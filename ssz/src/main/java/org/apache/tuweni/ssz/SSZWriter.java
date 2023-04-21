@@ -15,9 +15,11 @@ package org.apache.tuweni.ssz;
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.units.bigints.UInt256;
 import org.apache.tuweni.units.bigints.UInt384;
+import org.apache.tuweni.units.bigints.UInt64;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * A writer for encoding values to SSZ.
@@ -721,4 +723,11 @@ public interface SSZWriter {
     SSZ.encodeAsFixedTypeVectorTo(elements, this::writeSSZ);
   }
 
+  default void writeOptionalUint64(Optional<UInt64> maybeUint64) {
+    if(maybeUint64.isPresent()) {
+      writeUInt64List(maybeUint64.get().toLong());
+    } else {
+      writeUInt64List();
+    }
+  }
 }
