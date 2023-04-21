@@ -109,7 +109,7 @@ class BytesSSZReaderTest {
       toDecode.populateFromReader(sszReader);
       return toDecode;
     });
-    //assertEquals(receipt, decodedReceipt);
+    //now do it again with the optional empty
     assertTrue(receipt.equals(decodedReceipt));
     receipt = new Receipt(status, cumulativeGasUsed, logsBloom, transactionType, Optional.empty());
     encoded = SSZ.encode(receipt::writeTo);
@@ -120,6 +120,27 @@ class BytesSSZReaderTest {
     });
     assertTrue(receipt.equals(decodedReceipt));
   }
+
+    @Test
+    public void shouldRoundTripOptionalUInt64WhenFollowedByList() {
+      UInt256 status = UInt256.ONE;
+      UInt256 cumulativeGasUsed = UInt256.valueOf(1000);
+      List<Bytes> logsBloom = new ArrayList<>();
+      for(int b = 0; b < 256; b++) {
+        logsBloom.add(Bytes.of((byte) b));
+      }
+      byte transactionType = 5;
+      Optional<UInt64> cumulativeDataGasUsed = Optional.of(UInt64.valueOf(1000));
+      List<ItemizedReceipt.ReceiptLog> logs = new ArrayList<>();
+        logs.add(new ItemizedReceipt.ReceiptLog(Bytes32.random(), List.of(Bytes32.random(), Bytes32.random())));
+      Receipt receipt = new Receipt(status, cumulativeGasUsed, logsBloom, transactionType, cumulativeDataGasUsed);
+      Bytes encoded = SSZ.encode(receipt::writeTo);
+      Receipt decodedReceipt = SSZ.decode(encoded, sszReader -> {
+        var toDecode = new Receipt();
+        toDecode.populateFromReader(sszReader);
+        return toDecode;
+      });
+    }
 
   @ParameterizedTest
   @CsvSource({
